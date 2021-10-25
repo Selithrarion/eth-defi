@@ -2,7 +2,6 @@
   "name": "dbank",
   "version": "0.1.0",
   "description": "Decentralized Bank",
-  "author": "dev@dappuniversity.com",
   "homepage": ".",
   "dependencies": {
     "@openzeppelin/contracts": "3.3.0",
