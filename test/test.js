@@ -69,8 +69,8 @@ contract('dBank', ([deployer, user]) => {
     })
 
     describe('failure', () => {
-      it('depositing should be rejected', async () => {
-        await dbank.deposit({value: 10**15, from: user}).should.be.rejectedWith(EVM_REVERT) //to small amount
+      it('rejects if less than 0.01 ETH', async () => {
+        await dbank.deposit({value: 10**15, from: user}).should.be.rejectedWith(EVM_REVERT)
       })
     })
   })
