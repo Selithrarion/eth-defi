@@ -1,4 +1,3 @@
-// SPDX-License-Identifier: MIT
 pragma solidity >=0.6.0 <0.8.0;
 
 import "./Token.sol";
@@ -12,6 +11,8 @@ contract dBank {
 
   event Deposit(address indexed user, uint etherAmount, uint timeStart);
   event Withdraw(address indexed user, uint etherAmount, uint depositTime, uint interest);
+  event Borrow(address indexed user, uint collateralEtherAmount, uint borrowedTokenAmount);
+  event PayOff(address indexed user, uint fee);
 
   constructor(Token _token) public {
     token = _token;
@@ -54,30 +55,30 @@ contract dBank {
   }
 
   function borrow() payable public {
-    //check if collateral is >= than 0.01 ETH
-    //check if user doesn't have active loan
+    require(msg.value>=1e16, 'Error, collateral must be >= 0.01 ETH');
+    require(isBorrowed[msg.sender] == false, 'Error, loan already taken');
 
-    //add msg.value to ether collateral
+    collateralEther[msg.sender] += msg.value;
+    uint tokensToMint = collateralEther[msg.sender] / 2;
+    token.mint(msg.sender, tokensToMint);
+    isBorrowed[msg.sender] = true;
 
-    //calc tokens amount to mint, 50% of msg.value
-
-    //mint&send tokens to user
-
-    //activate borrower's loan status
-
-    //emit event
+    emit Borrow(msg.sender, collateralEther[msg.sender], tokensToMint);
   }
 
   function payOff() public {
-    //check if loan is active
-    //transfer tokens from user back to the contract
+    require(isBorrowed[msg.sender] == true, 'loan not active');
+    require(token.transferFrom(msg.sender, address(this), collateralEther[msg.sender]/2), "Error, can't receive tokens"); //must approve dBank 1st
 
-    //calc fee
+    uint feePercent = 10;
+    uint fee = collateralEther[msg.sender] / feePercent;
 
-    //send user's collateral minus fee
+    uint transferAmount = collateralEther[msg.sender] - fee;
+    msg.sender.transfer(transferAmount);
 
-    //reset borrower's data
+    collateralEther[msg.sender] = 0;
+    isBorrowed[msg.sender] = false;
 
-    //emit event
+    emit PayOff(msg.sender, fee);
   }
 }
